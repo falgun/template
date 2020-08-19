@@ -1,0 +1,38 @@
+{
+    "name": "falgunphp/template",
+    "type": "library",
+    "homepage": "https://github.com/falgun/template",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "S.M. Ataur Rahman",
+            "email": "dev.ataur.rahman@gmail.com",
+            "homepage": "https://ataur.net/"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Falgun\\Template\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Falgun\\Template\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^7.4"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.5",
+        "phpstan/phpstan": "^0.12.18",
+        "vimeo/psalm": "^3.11",
+        "phpunit/phpunit": "^9.1"
+    },
+    "scripts": {
+        "phpunit": "phpunit --verbose --colors=always"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
