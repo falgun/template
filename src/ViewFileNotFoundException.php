@@ -1,4 +1,5 @@
 <?php
+
 namespace Falgun\Template;
 
 use Exception;

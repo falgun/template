@@ -21,18 +21,19 @@
         }
     },
     "require": {
-        "php": "^7.4"
-    },
-    "require-dev": {
-        "squizlabs/php_codesniffer": "^3.5",
-        "phpstan/phpstan": "^0.12.18",
-        "vimeo/psalm": "^3.11",
-        "phpunit/phpunit": "^9.1"
+        "php": "^7.4",
+        "falgunphp/http": "^0.0.3",
+        "falgunphp/pagination": "^0.0.1"
     },
     "scripts": {
         "phpunit": "phpunit --verbose --colors=always"
     },
     "config": {
         "sort-packages": true
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.4",
+        "sempro/phpunit-pretty-print": "^1.3",
+        "vimeo/psalm": "^3.17"
     }
 }
