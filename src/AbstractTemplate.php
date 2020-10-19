@@ -3,19 +3,21 @@ declare(strict_types=1);
 
 namespace Falgun\Template;
 
-use Falgun\Http\Session;
 use Falgun\Http\Response;
+use Falgun\Csrf\CsrfTokenManager;
 use Falgun\Pagination\PaginationInterface;
 
 abstract class AbstractTemplate extends Response implements TemplateInterface
 {
+
+    public const CSRF_TOKEN_KEY = '_token';
 
     protected string $viewFile;
     protected string $viewDir;
 
     /** @var array<string, mixed> */
     protected array $attributes;
-    protected ?Session $session;
+    protected CsrfTokenManager $csrfTokenManager;
     protected ?PaginationInterface $pagination;
 
     public function __construct()
@@ -26,8 +28,13 @@ abstract class AbstractTemplate extends Response implements TemplateInterface
         $this->viewFile = '';
 
         $this->attributes = [];
-        $this->session = null;
+        $this->csrfTokenManager = $this->prepareCsrfTokenManager();
         $this->pagination = null;
+    }
+
+    private function prepareCsrfTokenManager(): CsrfTokenManager
+    {
+        return new CsrfTokenManager();
     }
 
     public function view(string $viewFileName): self
@@ -189,17 +196,11 @@ abstract class AbstractTemplate extends Response implements TemplateInterface
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
-    public function csrfToken(): string
+    public function csrfToken(string $key = self::CSRF_TOKEN_KEY): string
     {
-        if (isset($this->session) === false) {
-            throw new \InvalidArgumentException('You need to assign Session object in template class constructor', 500);
-        }
+        $token = $this->csrfTokenManager->getOrGenerate($key);
 
-        if ($this->session->has('falgun_csrf_token') === false) {
-            throw new \RuntimeException('CSRF TOKEN is not found in session, have you loaded the middleware?', 403);
-        }
-
-        return '<input type="hidden" value="' . ($this->session->get('falgun_csrf_token')) . '" name="csrf_token" />';
+        return '<input type="hidden" value="' . $token->getToken() . '" name="' . $key . '" />';
     }
 
     public function pagination(PaginationInterface $pagination): self

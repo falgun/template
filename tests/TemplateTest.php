@@ -15,33 +15,21 @@ final class TemplateTest extends TestCase
 
     public function setUp(): void
     {
-        $session = new \Falgun\Http\Session();
         $pagination = new \Falgun\Pagination\Pagination(1);
 
-        $this->template = new TemplateStub($session, $pagination);
+        $this->template = new TemplateStub($pagination);
     }
 
     public function testTemplate()
     {
-        $session = new \Falgun\Http\Session();
-        $pagination = new \Falgun\Pagination\Pagination(1);
-
-        $template = new TemplateStub($session, $pagination);
-
-
-        $this->assertSame('', $template->getViewDir());
-        $this->assertSame('', $template->getViewFile());
+        $this->assertSame('', $this->template->getViewDir());
+        $this->assertSame('', $this->template->getViewFile());
     }
 
     public function testInvalidViewFile()
     {
-        $session = new \Falgun\Http\Session();
-        $pagination = new \Falgun\Pagination\Pagination(1);
-
-        $template = new TemplateStub($session, $pagination);
-
         try {
-            $template->render();
+            $this->template->render();
             $this->fail('ViewFileNotFoundException should have been thrown');
         } catch (ViewFileNotFoundException $ex) {
             $this->assertSame('/ Not found', $ex->getMessage());
@@ -51,17 +39,13 @@ final class TemplateTest extends TestCase
 
     public function testValidViewFile()
     {
-        $session = new \Falgun\Http\Session();
-        $pagination = new \Falgun\Pagination\Pagination(1);
+        $this->template->view(__DIR__ . '/Stubs/Views/Unit/test');
 
-        $template = new TemplateStub($session, $pagination);
-        $template->view(__DIR__ . '/Stubs/Views/Unit/test');
+        $this->template->setViewDir('/DIR');
 
-        $template->setViewDir('/DIR');
-
-        $this->assertSame(__DIR__ . '/Stubs/Views/Unit/test.php', $template->getViewFile());
+        $this->assertSame(__DIR__ . '/Stubs/Views/Unit/test.php', $this->template->getViewFile());
         // default view dir is "/", so it will be prepended
-        $this->assertSame('/DIR/' . __DIR__ . '/Stubs/Views/Unit/test.php', $template->getViewAbsolutePath());
+        $this->assertSame('/DIR/' . __DIR__ . '/Stubs/Views/Unit/test.php', $this->template->getViewAbsolutePath());
     }
 
     public function testRender()
@@ -166,6 +150,9 @@ final class TemplateTest extends TestCase
         $this->assertTrue($template->pagination(new \Falgun\Pagination\Pagination(1)) instanceof \Falgun\Template\AbstractTemplate);
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testInvalidSessionState()
     {
         $template = new class extends \Falgun\Template\AbstractTemplate {
@@ -183,10 +170,10 @@ final class TemplateTest extends TestCase
 
         try {
             $template->csrfToken();
-            $this->fail('\RuntimeException should have been thrown');
-        } catch (\InvalidArgumentException $ex) {
-            $this->assertSame('You need to assign Session object in template class constructor', $ex->getMessage());
-            $this->assertSame(500, $ex->getCode());
+            $this->fail('\Exception should have been thrown');
+        } catch (\Exception $ex) {
+            $this->assertSame('Undefined variable: _SESSION', $ex->getMessage());
+            $this->assertSame(8, $ex->getCode());
         }
     }
 
@@ -197,20 +184,20 @@ final class TemplateTest extends TestCase
     {
         $_SESSION['undefined_csrf_token'] = 'abcd';
 
-        try {
-            $this->template->csrfToken();
-            $this->fail('\RuntimeException should have been thrown');
-        } catch (\RuntimeException $ex) {
-            $this->assertSame('CSRF TOKEN is not found in session, have you loaded the middleware?', $ex->getMessage());
-            $this->assertSame(403, $ex->getCode());
-        }
+//        try {
+        $tokenHtml = $this->template->csrfToken();
+
+        $this->assertSame(
+            1,
+            preg_match('#<input type="hidden" value="([a-zA-Z0-9\-\_]+)" name="' . TemplateStub::CSRF_TOKEN_KEY . '" />#', $tokenHtml)
+        );
     }
 
     public function testValidCsrfToken()
     {
-        $_SESSION['falgun_csrf_token'] = 'abcd';
+        $_SESSION[TemplateStub::CSRF_TOKEN_KEY] = 'abcd';
 
-        $this->assertSame('<input type="hidden" value="abcd" name="csrf_token" />', $this->template->csrfToken());
+        $this->assertSame('<input type="hidden" value="abcd" name="' . TemplateStub::CSRF_TOKEN_KEY . '" />', $this->template->csrfToken());
     }
 
     public function testAbstraction()

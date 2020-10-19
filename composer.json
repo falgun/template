@@ -22,6 +22,7 @@
     },
     "require": {
         "php": "^7.4",
+        "falgunphp/csrf": "dev-master",
         "falgunphp/http": "^0.0.3",
         "falgunphp/pagination": "^0.0.1"
     },
