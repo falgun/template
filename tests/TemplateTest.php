@@ -172,8 +172,7 @@ final class TemplateTest extends TestCase
             $template->csrfToken();
             $this->fail('\Exception should have been thrown');
         } catch (\Exception $ex) {
-            $this->assertSame('Undefined variable: _SESSION', $ex->getMessage());
-            $this->assertSame(8, $ex->getCode());
+            $this->assertSame('Undefined variable $_SESSION', $ex->getMessage());
         }
     }
 
